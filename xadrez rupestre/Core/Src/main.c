@@ -32,13 +32,20 @@
 #define write(x, y) HAL_GPIO_WritePin(x##_GPIO_Port, x##_Pin, y)
 #define read(x) HAL_GPIO_ReadPin(x##_GPIO_Port, x##_Pin)
 
+#define NULL 0
+
 //TELAS
 
-uint8_t set, task;
+uint8_t set, task, dbc;
 
 uint8_t buff[32];
 
 //geral e display
+
+void delay_us (uint16_t us) {
+	TIM2->CNT = 0;  // set the counter value a 0
+	while (TIM2->CNT < us);  // wait for the counter to reach the us input in the parameter
+}
 
 void lcd_write(uint8_t data, uint8_t cmd) {
 	
@@ -50,7 +57,7 @@ void lcd_write(uint8_t data, uint8_t cmd) {
 	write(d4, data & 0x10);
 	
 	write(e, 1);
-	HAL_Delay(1);
+	delay_us(250);
 	write(e, 0);
 	
 	write(d7, data & 0x8);
@@ -59,7 +66,7 @@ void lcd_write(uint8_t data, uint8_t cmd) {
 	write(d4, data & 0x1);
 	
 	write(e, 1);
-	HAL_Delay(1);
+	delay_us(250);
 	write(e, 0);
 }
 
@@ -144,7 +151,7 @@ uint8_t spi[6];
 
 typedef struct {
 	
-	uint8_t x, y, type, id, team, on;
+	uint8_t x, y, type, id, team, on, first;
 	
 } pc;
 
@@ -176,12 +183,13 @@ void start_game() {
 	for(uint8_t i = 0; i < 8; i++) {
 		
 		team1[i] = tabuleiro[0][i] = (pc *)malloc(sizeof(pc));
-		(*team1[i]).team = 0;
+		(*team1[i]).team = 2;
 		(*team1[i]).id = i;
 		(*team1[i]).x = i;
 		(*team1[i]).y = 0;
 		(*team1[i]).type = 0;
 		(*team1[i]).on = 1;
+		(*team1[i]).first = 1;
 		
 		team2[i] = tabuleiro[7][i] = (pc *)malloc(sizeof(pc));
 		(*team2[i]).team = 1;
@@ -190,6 +198,7 @@ void start_game() {
 		(*team2[i]).y = 7;
 		(*team2[i]).type = 0;
 		(*team2[i]).on = 1;
+		(*team2[i]).first = 1;
 	}
 	
 }
@@ -245,15 +254,16 @@ void task0() {
 	lcd_write(0xD4, 0);
 	lcd_writestr("PARA COMECAR O JOGO!");
 	
-	if(!read(sw)) {
+	if(!read(sw) && dbc) {
 		set = 1;
 	}
+	if(read(sw)) dbc = 1;
 	
 }
 
 //task1
 
-uint8_t turno, sel, opt, step, dbc, mov;
+uint8_t turno, sel, opt, step, mov;
 uint8_t count1, count2, lim;
 void set1() {
 	
@@ -296,6 +306,7 @@ int task1() {
 		lcd_writestr("      VERDE!       ");
 		lcd_write(0xD4, 0);
 		lcd_writestr("   PRIMA O BOTAO   ");
+		HAL_Delay(1000);
 		while(read(sw));
 		set0();
 		return 0;
@@ -310,6 +321,7 @@ int task1() {
 		lcd_writestr("      VERM.!       ");
 		lcd_write(0xD4, 0);
 		lcd_writestr("   PRIMA O BOTAO   ");
+		HAL_Delay(1000);
 		while(read(sw));
 		set0();
 		return 0;
@@ -358,13 +370,97 @@ int task1() {
 			}	
 			
 			if(!read(sw) && dbc) {
-				step = 1;
-				
-				intent.x = (*blink).x;
-				intent.y = (*blink).y;
-				intent.type = 1;
-			
+				uint8_t can = 3;
+				if((*blink).type == 0) {
+					if(!turno) {
+						if((*blink).x == 0 || (*tabuleiro[(*blink).y-1][(*blink).x-1]).team != 2) can--;
+						if((*blink).y == 0 || tabuleiro[(*blink).y-1][(*blink).x]) can--;
+						if((*blink).x == 7 || (*tabuleiro[(*blink).y-1][(*blink).x+1]).team != 2) can--;	
+						
+					}
+					
+					if(turno) {
+						if((*blink).x == 0 || (*tabuleiro[(*blink).y+1][(*blink).x-1]).team != 1) can--;
+						if((*blink).y == 7 || tabuleiro[(*blink).y+1][(*blink).x]) can--;
+						if((*blink).x == 7 || (*tabuleiro[(*blink).y+1][(*blink).x+1]).team != 1) can--;
+						
+					}
+						
+					if(can) {
+						step = 1;
+						intent.x = (*blink).x;
+						intent.y = (*blink).y;
+						if(turno) {
+							if(intent.y < 7 && tabuleiro[intent.y+1][intent.x] == NULL) intent.y++;
+							else {
+								
+								if((*blink).x < 7 && (*blink).y < 7) {
+								
+									if((*tabuleiro[(*blink).y+1][(*blink).x+1]).team == 1) {
+										
+										intent.y = (*blink).y+1;
+										intent.x = (*blink).x+1;
+										
+										
+									}
+									
+								}
+								
+								if((*blink).x > 0 && (*blink).y < 7) {
+								
+									if((*tabuleiro[(*blink).y+1][(*blink).x-1]).team == 1) {
+										
+										intent.y = (*blink).y+1;
+										intent.x = (*blink).x-1;
+										
+										
+									}
+									
+								}
+								
+							}
+						}
+						if(!turno) {
+							if(intent.y > 0 && tabuleiro[intent.y-1][intent.x] == NULL) intent.y--;
+							else {
+								
+								if((*blink).x < 7 && (*blink).y > 0) {
+								
+									if((*tabuleiro[(*blink).y-1][(*blink).x+1]).team == 2) {
+										
+										intent.y = (*blink).y-1;
+										intent.x = (*blink).x+1;
+										
+										
+									}
+									
+								}
+								
+								if(!turno) {
+							
+								if((*blink).x > 0 && (*blink).y > 0) {
+									
+									if((*tabuleiro[(*blink).y-1][(*blink).x-1]).team == 2) {
+										
+										intent.y = (*blink).y-1;
+										intent.x = (*blink).x-1;
+										
+										
+									}
+									
+								}
+								
+							}
+								
+							}
+						}
+						intent.type = 1;
+					
+					}
 			}
+		}
+			
+		
 			
 			if(mcp.ch1 > 3900 || mcp.ch1 < 100 || !read(sw)) tim = dbc = 0;
 			else dbc = 1;
@@ -376,35 +472,114 @@ int task1() {
 				lcd_write(0xD4, 0);
 				sprintf(buff, "Movendo peao no. %d  ", sel);
 				lcd_writestr(buff);
-		
-				if(mcp.ch2 < 100 && dbc) {
-					
-					if(intent.y >= 0 && intent.y < 7) intent.y++;
+				int8_t limx, limy;
 				
+				if((*blink).first) {
+					limy = 2;
+				} else limy = 1;
+				
+				
+				if(mcp.ch2 < 100 && dbc) {
+					if((!turno && tabuleiro[(*blink).y-1][(*blink).x] == NULL) || (turno && tabuleiro[(*blink).y+1][(*blink).x]) == NULL) {
+					 if(tabuleiro[intent.y][intent.x] != blink)
+						if(intent.y < 7 && tabuleiro[intent.y+1][intent.x] == NULL) {
+							intent.x = (*blink).x;
+						if(turno) if(intent.y >= 0 && intent.y < (*blink).y+limy) intent.y++;
+						if(!turno) if(intent.y > 0 && intent.y <= (*blink).y+limy) intent.y++;
+					}
 				}
+			}
 
 				if(mcp.ch2 > 3900 && dbc) {
-
-					if(intent.y > 0 && intent.y <= 7) intent.y--;
+				 if((!turno && tabuleiro[(*blink).y-1][(*blink).x] == NULL) || (turno && tabuleiro[(*blink).y+1][(*blink).x]) == NULL) {
+					if(tabuleiro[intent.y][intent.x] != blink)
+						if(intent.y > 0 && tabuleiro[intent.y-1][intent.x] == NULL) {
+							intent.x = (*blink).x;
+						if(!turno) if(intent.y > (*blink).y-limy && intent.y <= 7) intent.y--;
+						if(turno)	 if(intent.y >= (*blink).y-limy && intent.y < 7) intent.y--;
+					}
+				}
 					
 				}
-		
+
 				if(mcp.ch1 > 3900 && dbc) {
 
-					if(intent.x >= 0 && intent.x < 7) intent.x++;
-				
+					if(turno) {
+						
+						if((*blink).x < 7 && (*blink).y < 7) {
+							
+							if((*tabuleiro[(*blink).y+1][(*blink).x+1]).team == 1) {
+								
+								intent.y = (*blink).y+1;
+								intent.x = (*blink).x+1;
+								
+								
+							}
+							
+						}
+						
+					}
+					
+					if(!turno) {
+						
+						if((*blink).x < 7 && (*blink).y > 0) {
+							
+							if((*tabuleiro[(*blink).y-1][(*blink).x+1]).team == 2) {
+								
+								intent.y = (*blink).y-1;
+								intent.x = (*blink).x+1;
+								
+								
+							}
+							
+						}
+						
+					}
+					
 				}
-
+				
 				if(mcp.ch1 < 100 && dbc) {
 
-					if(intent.x > 0 && intent.x <= 7) intent.x--;
+					if(turno) {
+						
+						if((*blink).x > 0 && (*blink).y < 7) {
+							
+							if((*tabuleiro[(*blink).y+1][(*blink).x-1]).team == 1) {
+								
+								intent.y = (*blink).y+1;
+								intent.x = (*blink).x-1;
+								
+								
+							}
+							
+						}
+						
+					}
+					
+					if(!turno) {
+						
+						if((*blink).x > 0 && (*blink).y > 0) {
+							
+							if((*tabuleiro[(*blink).y-1][(*blink).x-1]).team == 2) {
+								
+								intent.y = (*blink).y-1;
+								intent.x = (*blink).x-1;
+								
+								
+							}
+							
+						}
+						
+					}
 					
 				}	
 				
 				if(!read(sw) && dbc) {
+					(*blink).first = 0;
 					step = 0;
 					turno = !turno;
 					dbc = 0;
+					sel = 0;
 					intent.type = 0;
 					move(blink, intent.x, intent.y);
 					mov++;
@@ -414,13 +589,14 @@ int task1() {
 				else dbc = 1;
 		
 		break;
-				
+		
 		case 2:
 			
+		
 		break;
-			
-	}
 	
+				
+	}
 	
 }
 
@@ -487,15 +663,14 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI2_Init();
   MX_TIM6_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+	
+	HAL_TIM_Base_Start(&htim2);
 	
 	lcd_init();
 	
-	lcd_writestr("XADREZ MODO PRIMATA");
-	
 	HAL_TIM_Base_Start_IT(&htim6);
-
-
 	
 
   /* USER CODE END 2 */
@@ -602,17 +777,21 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			green |= (0x01<<j);
 		}
 		
-		if(tabuleiro[i][j] != NULL) {
+		if(tabuleiro[i][j] != NULL) {	
 			
-			if(!(*tabuleiro[i][j]).team) {
+			if((*tabuleiro[i][j]).team == 2) {
 				if(blink == tabuleiro[i][j]) {
 					if(tim > 250) red |= (0x01<<j);
+				} else if((*tabuleiro[i][j]).type == 1) {
+					if(tim > 70) red |= (0x01<<j);
 				} else red |= (0x01<<j);
 			}
 			else 
 				if(blink == tabuleiro[i][j]) {
 					if(tim > 250) green |= (0x01<<j);
-				} else green |= (0x01<<j);
+				} else if((*tabuleiro[i][j]).type == 1) {
+					if(tim > 70) green |= (0x01<<j);
+				}else green |= (0x01<<j);
 			
 		}
 	

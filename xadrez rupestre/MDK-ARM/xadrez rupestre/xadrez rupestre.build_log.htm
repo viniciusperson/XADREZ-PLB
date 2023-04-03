@@ -21,66 +21,66 @@ Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.0.9.0
 Dialog DLL:      TARMCM1.DLL V1.14.6.0
  
 <h2>Project:</h2>
-C:\Users\Aluno\Documents\github\treinamento-stm32\xadrez rupestre\MDK-ARM\xadrez rupestre.uvprojx
+C:\Users\Aluno\Documents\github\XADREZ-PLB\xadrez rupestre\MDK-ARM\xadrez rupestre.uvprojx
 Project File Date:  02/09/2023
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'xadrez rupestre'
 compiling main.c...
-../Core/Src/main.c(45): warning:  #188-D: enumerated type mixed with another type
-  	write(rs, cmd);
-../Core/Src/main.c(47): warning:  #188-D: enumerated type mixed with another type
-  	write(d7, data & 0x80);
-../Core/Src/main.c(48): warning:  #188-D: enumerated type mixed with another type
-  	write(d6, data & 0x40);
-../Core/Src/main.c(49): warning:  #188-D: enumerated type mixed with another type
-  	write(d5, data & 0x20);
-../Core/Src/main.c(50): warning:  #188-D: enumerated type mixed with another type
-  	write(d4, data & 0x10);
 ../Core/Src/main.c(52): warning:  #188-D: enumerated type mixed with another type
-  	write(e, 1);
+  	write(rs, cmd);
 ../Core/Src/main.c(54): warning:  #188-D: enumerated type mixed with another type
-  	write(e, 0);
+  	write(d7, data & 0x80);
+../Core/Src/main.c(55): warning:  #188-D: enumerated type mixed with another type
+  	write(d6, data & 0x40);
 ../Core/Src/main.c(56): warning:  #188-D: enumerated type mixed with another type
-  	write(d7, data & 0x8);
+  	write(d5, data & 0x20);
 ../Core/Src/main.c(57): warning:  #188-D: enumerated type mixed with another type
-  	write(d6, data & 0x4);
-../Core/Src/main.c(58): warning:  #188-D: enumerated type mixed with another type
-  	write(d5, data & 0x2);
+  	write(d4, data & 0x10);
 ../Core/Src/main.c(59): warning:  #188-D: enumerated type mixed with another type
-  	write(d4, data & 0x1);
-../Core/Src/main.c(61): warning:  #188-D: enumerated type mixed with another type
   	write(e, 1);
-../Core/Src/main.c(63): warning:  #188-D: enumerated type mixed with another type
+../Core/Src/main.c(61): warning:  #188-D: enumerated type mixed with another type
   	write(e, 0);
-../Core/Src/main.c(97): warning:  #167-D: argument of type "uint8_t *" is incompatible with parameter of type "char *restrict"
+../Core/Src/main.c(63): warning:  #188-D: enumerated type mixed with another type
+  	write(d7, data & 0x8);
+../Core/Src/main.c(64): warning:  #188-D: enumerated type mixed with another type
+  	write(d6, data & 0x4);
+../Core/Src/main.c(65): warning:  #188-D: enumerated type mixed with another type
+  	write(d5, data & 0x2);
+../Core/Src/main.c(66): warning:  #188-D: enumerated type mixed with another type
+  	write(d4, data & 0x1);
+../Core/Src/main.c(68): warning:  #188-D: enumerated type mixed with another type
+  	write(e, 1);
+../Core/Src/main.c(70): warning:  #188-D: enumerated type mixed with another type
+  	write(e, 0);
+../Core/Src/main.c(104): warning:  #167-D: argument of type "uint8_t *" is incompatible with parameter of type "char *restrict"
   	sprintf(buff, "CODIGO DE ERRO %d", cod);
-../Core/Src/main.c(115): warning:  #188-D: enumerated type mixed with another type
+../Core/Src/main.c(122): warning:  #188-D: enumerated type mixed with another type
   	write(nss, 0);
-../Core/Src/main.c(117): warning:  #188-D: enumerated type mixed with another type
+../Core/Src/main.c(124): warning:  #188-D: enumerated type mixed with another type
   	write(nss, 1);
-../Core/Src/main.c(125): warning:  #188-D: enumerated type mixed with another type
+../Core/Src/main.c(132): warning:  #188-D: enumerated type mixed with another type
   	write(nss, 0);
-../Core/Src/main.c(127): warning:  #188-D: enumerated type mixed with another type
+../Core/Src/main.c(134): warning:  #188-D: enumerated type mixed with another type
   	write(nss, 1);
-../Core/Src/main.c(343): warning:  #167-D: argument of type "uint8_t *" is incompatible with parameter of type "char *restrict"
+../Core/Src/main.c(355): warning:  #167-D: argument of type "uint8_t *" is incompatible with parameter of type "char *restrict"
   				sprintf(buff, "Selec. peao no. %d   ", (*blink).id);
-../Core/Src/main.c(377): warning:  #167-D: argument of type "uint8_t *" is incompatible with parameter of type "char *restrict"
+../Core/Src/main.c(473): warning:  #167-D: argument of type "uint8_t *" is incompatible with parameter of type "char *restrict"
   				sprintf(buff, "Movendo peao no. %d  ", sel);
-../Core/Src/main.c(382): warning:  #186-D: pointless comparison of unsigned integer with zero
-  					if(intent.y >= 0 && intent.y < 7) intent.y++;
-../Core/Src/main.c(394): warning:  #186-D: pointless comparison of unsigned integer with zero
-  					if(intent.x >= 0 && intent.x < 7) intent.x++;
-../Core/Src/main.c(425): warning:  #940-D: missing return statement at end of non-void function "task1" 
+../Core/Src/main.c(487): warning:  #186-D: pointless comparison of unsigned integer with zero
+  						if(turno) if(intent.y >= 0 && intent.y < (*blink).y+limy) intent.y++;
+../Core/Src/main.c(475): warning:  #177-D: variable "limx"  was declared but never referenced
+  				int8_t limx, limy;
+../Core/Src/main.c(601): warning:  #940-D: missing return statement at end of non-void function "task1" 
   }
-../Core/Src/main.c(625): warning:  #188-D: enumerated type mixed with another type
+../Core/Src/main.c(804): warning:  #188-D: enumerated type mixed with another type
   	write(rck, 1);
-../Core/Src/main.c(626): warning:  #188-D: enumerated type mixed with another type
+../Core/Src/main.c(805): warning:  #188-D: enumerated type mixed with another type
   	write(rck, 0);
 ../Core/Src/main.c: 25 warnings, 0 errors
 linking...
-Program Size: Code=9744 RO-data=252 RW-data=60 ZI-data=2588  
+Program Size: Code=11140 RO-data=252 RW-data=60 ZI-data=2652  
 FromELF: creating hex file...
 "xadrez rupestre\xadrez rupestre.axf" - 0 Error(s), 25 Warning(s).
 
@@ -106,7 +106,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.6.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>
